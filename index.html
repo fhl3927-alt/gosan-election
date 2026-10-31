@@ -19,7 +19,7 @@
       </div>
       <div>
         <h1 class="font-serif text-2xl font-black text-amber-200">고산교회 항존직 피택선거</h1>
-        <p class="text-sm text-slate-300">관리자 입력 시스템 (큰 글씨 모드)</p>
+        <p class="text-sm text-slate-300">관리자 입력 시스템 (인터넷망 연동 모드)</p>
       </div>
     </div>
     <div class="flex items-center space-x-3">
@@ -36,7 +36,16 @@
 
   <main class="flex-grow w-full max-w-7xl mx-auto space-y-6">
     
-    <!-- 1단계: 선거 기본 정보 (화면 넓게 활용) -->
+    <!-- 작게 만든 실시간 싱크 상태 알림창 -->
+    <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl px-4 py-2.5 flex items-center justify-between shadow-md max-w-xl">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
+        <span class="text-xs font-bold text-amber-300">클라우드 실시간 싱크 활성 (다른 인터넷망 호환)</span>
+      </div>
+      <span class="text-[11px] text-emerald-400 font-mono font-bold">ONLINE SYNC</span>
+    </div>
+
+    <!-- 1단계 기본 정보 -->
     <div class="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
       <div class="flex items-center space-x-3 pb-4 border-b border-slate-800 mb-6">
         <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 text-base font-black flex items-center justify-center font-mono">1</span>
@@ -65,14 +74,14 @@
           <input type="text" id="adminElectionTitle" value="항존직 피택선거" class="w-full bg-slate-950 border-2 border-slate-700 rounded-2xl px-4 py-3.5 text-lg text-amber-200 font-bold focus:border-amber-500 focus:outline-none" oninput="handleStateUpdate()">
         </div>
         <div>
-          <label class="block text-sm font-bold text-amber-400 mb-2">총 투표자(투표수) [자동 계산 기준]</label>
+          <label class="block text-sm font-bold text-amber-400 mb-2">총 투표자(투표수)</label>
           <input type="text" inputmode="numeric" pattern="[0-9]*" id="adminTotalBallots" placeholder="숫자 입력" class="w-full bg-slate-950 border-2 border-sky-500/50 rounded-2xl px-4 py-3.5 text-xl text-white font-mono font-black focus:border-sky-400 focus:outline-none" oninput="handleTotalBallotsInput(this.value)">
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-slate-800 items-center">
         <div>
-          <label class="block text-sm font-bold text-amber-400 mb-2">피택 확정 기준 득표수 (자동 산출 또는 직접 수정 가능)</label>
+          <label class="block text-sm font-bold text-amber-400 mb-2">피택 확정 기준 득표수</label>
           <div class="flex items-center space-x-3">
             <input type="text" inputmode="numeric" pattern="[0-9]*" id="adminThreshold" placeholder="기준표" class="w-full bg-slate-950 border-2 border-amber-500/60 rounded-2xl px-4 py-3.5 text-xl text-amber-300 font-mono font-black focus:border-amber-400 focus:outline-none" oninput="handleStateUpdate()">
             <span class="text-base font-bold text-slate-400 whitespace-nowrap">표 이상</span>
@@ -88,7 +97,7 @@
       </div>
     </div>
 
-    <!-- 2단계: 후보자 입력 (넓고 크게) -->
+    <!-- 2단계 후보자 입력 -->
     <div class="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
       <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
         <div class="flex items-center space-x-3">
@@ -123,8 +132,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V5';
-    const SYNC_CHANNEL = 'gosan_election_channel_v5';
+    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V6';
+    const SYNC_CHANNEL = 'gosan_election_channel_v6';
 
     let bc = null;
     try { bc = new BroadcastChannel(SYNC_CHANNEL); } catch(e) {}
@@ -192,7 +201,6 @@
       handleStateUpdate();
     }
 
-    // 총 투표수 입력 시 직분에 맞춰 자동 계산 (장로: 2/3, 안수집사/권사: 1/2)
     function handleTotalBallotsInput(val) {
       const cleaned = val.replace(/[^0-9]/g, '');
       appState.totalBallots = cleaned;
@@ -206,10 +214,8 @@
       if (!isNaN(total) && total > 0) {
         let calc = 0;
         if (office === '장로') {
-          // 2/3 이상 (소수점 올림 또는 버림 선택 가능하나 교회 선거는 통상 올림 또는 과반 이상 정수 처리)
           calc = Math.ceil(total * (2 / 3));
         } else if (office === '안수집사' || office === '권사') {
-          // 1/2 이상 (과반수)
           calc = Math.floor(total / 2) + 1;
         }
         if (calc > 0) {

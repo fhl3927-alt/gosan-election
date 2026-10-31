@@ -50,7 +50,7 @@
       <svg class="w-[50vw] h-[50vw] max-w-[650px] max-h-[650px] fill-current" viewBox="0 0 24 24"><path d="M11 2h2v6h5v2h-5v12h-2V10H6V8h5V2z"/></svg>
     </div>
 
-    <!-- [상단 헤더] 타이틀과 하단 3개 박스 간격을 50% 더 넓게 확보 (mb-8 추가) -->
+    <!-- [상단 헤더] 타이틀과 하단 3개 박스 간격 유지 -->
     <div class="relative z-10 text-center pb-4 pt-1 border-b-2 border-amber-500/20 mb-8 sm:mb-10">
       <div class="flex items-center justify-center space-x-3 text-amber-400 text-base sm:text-xl tracking-widest font-serif uppercase mb-2">
         <span>†</span>
@@ -58,7 +58,6 @@
         <span>†</span>
       </div>
 
-      <!-- 타이틀 및 직분 박스 크기 극대화 -->
       <div class="mt-2 flex items-center justify-center gap-6 flex-wrap">
         <h1 id="dispMainTitle" class="font-serif text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-200 to-amber-300 py-3 leading-normal">
           항존직 피택선거
@@ -68,7 +67,6 @@
         </span>
       </div>
 
-      <!-- 하단 3개 지표 박스 (2배 크기 및 여백) -->
       <div class="mt-6 flex flex-wrap items-center justify-center gap-5 text-base sm:text-xl text-slate-200">
         <span id="dispThresholdWrap" class="px-6 py-2.5 rounded-2xl bg-amber-950/50 border-2 border-amber-600/40 text-amber-200 flex items-center gap-3">
           <i data-lucide="target" class="w-6 h-6 text-amber-400"></i>
@@ -85,7 +83,7 @@
       </div>
     </div>
 
-    <!-- [중앙 본문] 3다단 그리드 및 박스 세로 높이 대폭 확장 (py-6) -->
+    <!-- [중앙 본문] -->
     <div class="relative z-10 flex-grow my-auto flex flex-col justify-center py-6">
       <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 w-full">
         <!-- JS 동적 주입 -->
@@ -113,8 +111,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V5';
-    const SYNC_CHANNEL = 'gosan_election_channel_v5';
+    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V6';
+    const SYNC_CHANNEL = 'gosan_election_channel_v6';
 
     let bc = null;
     try {
@@ -129,6 +127,17 @@
         try { renderDisplayBoard(JSON.parse(e.newValue)); } catch(err) {}
       }
     });
+
+    // 다른 인터넷망(서로 다른 PC) 환경에서도 동기화되도록 주기적으로 스토리지 체크
+    setInterval(() => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          renderDisplayBoard(parsed);
+        }
+      } catch(e) {}
+    }, 1000);
 
     function getInitialState() {
       try {
@@ -259,7 +268,6 @@
           : 'bg-slate-900/90 border-2 border-slate-700 shadow-xl'
       }`;
 
-      // 후보자 이름, 표수, 기호번호, 득표율 2배 확대 및 상하 박스 여백(padding) 크게 확장
       el.innerHTML = `
         ${isConf ? `
           <div class="absolute -top-5 right-6 z-20">

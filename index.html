@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>고산교회 항존직 피택선거 결과보고 시스템</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (Noto Serif KR & Noto Sans KR) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@500;600;700;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Noto Serif KR"', 'serif'],
+            sans: ['"Noto Sans KR"', 'sans-serif'],
+          },
+          colors: {
+            church: {
+              gold: '#c59b27',
+              goldLight: '#f6e4a4',
+              goldDark: '#8a6813',
+              navy: '#0b1120',
+              navyCard: '#131d33',
+              crimson: '#631c29'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 16:9 와이드스크린 뷰포트 규격 */
+    .screen-16-9 {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      max-width: 1920px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* 빔프로젝터 성스러운 배경 */
+    .sacred-gradient {
+      background-color: #080d19;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(197, 155, 39, 0.16) 0%, transparent 60%),
+        radial-gradient(circle at 10% 90%, rgba(99, 28, 41, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(15, 23, 42, 0.7) 0%, transparent 50%);
+    }
+
+    /* 확정 뱃지 빛남 펄스 애니메이션 */
+    .pulse-gold {
+      box-shadow: 0 0 20px rgba(234, 179, 8, 0.55);
+      animation: sacredGlow 2.2s infinite ease-in-out;
+    }
+
+    @keyframes sacredGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); }
+      50% { transform: scale(1.03); box-shadow: 0 0 26px rgba(234, 179, 8, 0.85); }
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .screen-16-9 { aspect-ratio: auto; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-amber-600 selection:text-white flex flex-col justify-between">
+
+  <!-- ================= TOP BAR (입력화면 및 단일모드 네비게이션) ================= -->
+  <header id="globalHeader" class="no-print bg-slate-900/95 border-b border-amber-500/20 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+      
+      <!-- 로고 및 성전 문양 -->
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M11 2h2v6h5v2h-5v12h-2V10H6V8h5V2z"/>
+          </svg>
+        </div>
+        <div>
+          <span class="font-serif text-sm sm:text-base font-bold text-amber-200">고산교회 항존직 피택선거</span>
+          <span class="hidden sm:inline-block text-[11px] text-slate-400 ml-1.5 font-sans">실시간 개표·결과보고 시스템</span>
+        </div>
+      </div>
+
+      <!-- 모드 탭 전환 -->
+      <div class="flex items-center space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+        <button id="tabAdminBtn" onclick="switchMode('admin')" class="px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all text-amber-300 bg-amber-600/20 border border-amber-500/40 flex items-center gap-1.5">
+          <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+          <span>입력 관리</span>
+        </button>
+        <button id="tabDisplayBtn" onclick="switchMode('display')" class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+          <i data-lucide="tv" class="w-3.5 h-3.5"></i>
+          <span>16:9 공개보고</span>
+        </button>
+      </div>
+
+      <!-- 듀얼모니터 전용: 새 창으로 16:9 띄우기 버튼 -->
+      <div class="flex items-center space-x-2">
+        <button onclick="openDisplayWindow()" title="새 창으로 16:9 스크린을 띄워 빔프로젝터 모니터로 이동시킵니다." class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 text-xs font-bold rounded-lg shadow flex items-center gap-1.5 transition-all">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span class="hidden md:inline">새 창으로 16:9 송출</span>
+          <span class="md:hidden">16:9 송출</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= 1. 관리자 입력 모드 (ADMIN VIEW) ================= -->
+  <main id="adminSection" class="flex-grow w-full max-w-6xl mx-auto px-4 py-6 space-y-6">
+    
+    <!-- 실시간 동기화 상태 알림 배너 -->
+    <div class="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+      <div class="flex items-center space-x-3">
+        <div class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></div>
+        <div>
+          <div class="text-xs font-bold text-amber-300 flex items-center gap-2">
+            <span>실시간 인터넷 & 듀얼 스크린 동기화 활성</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/40">ONLINE SYNC</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">
+            이 창에서 입력하는 표수는 빔프로젝터 창에 즉각 실시간 동기화됩니다. (비워둔 후보자는 공개 화면에 나타나지 않습니다)
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="showResetDialog()" class="px-3 py-1.5 text-xs text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-500/60 rounded-lg flex items-center gap-1 transition-all">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          <span>모두 초기화</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 1단계: 선거 기본 정보 -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-sm">
+      <div class="flex items-center space-x-2 pb-3.5 border-b border-slate-800">
+        <span class="w-6 h-6 rounded bg-amber-500/20 text-amber-400 text-xs font-bold flex items-center justify-center font-mono">1</span>
+        <h2 class="font-serif text-base font-bold text-amber-100">선거 기본정보 설정</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <!-- 소속 교회명 -->
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">소속 교회명</label>
+          <input type="text" id="adminChurchName" value="고산교회"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
+            oninput="handleStateUpdate()">
+        </div>
+
+        <!-- 선출 직분 -->
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">선출 직분 (타이틀)</label>
+          <div class="flex space-x-1.5">
+            <select id="officeSelect" onchange="changeOffice(this.value)"
+              class="w-1/2 bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:border-amber-500 focus:outline-none">
+              <option value="장로">장로</option>
+              <option value="안수집사">안수집사</option>
+              <option value="권사">권사</option>
+              <option value="custom">직접입력</option>
+            </select>
+            <input type="text" id="adminOfficeTitle" placeholder="직분명" value="장로"
+              class="w-1/2 bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-amber-300 font-bold focus:border-amber-500 focus:outline-none"
+              oninput="handleStateUpdate()">
+          </div>
+        </div>
+
+        <!-- 선거 공식 명칭 -->
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">선거 공식 명칭</label>
+          <input type="text" id="adminElectionTitle" value="항존직 피택선거"
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-amber-200 font-medium focus:border-amber-500 focus:outline-none"
+            oninput="handleStateUpdate()">
+        </div>
+
+        <!-- 확정 기준 득표수 -->
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">확정 기준 득표수 (초기 빈칸)</label>
+          <div class="relative">
+            <input type="number" id="adminThreshold" min="0" placeholder="표수 입력"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-amber-300 font-mono font-bold focus:border-amber-500 focus:outline-none"
+              oninput="handleStateUpdate()">
+            <span class="absolute right-3 top-2 text-xs text-slate-500 pointer-events-none">표 이상</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 총 투표수 및 옵션 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-800/80 text-xs">
+        <div class="flex items-center space-x-2">
+          <span class="text-slate-400">총 투표자(투표수):</span>
+          <input type="number" id="adminTotalBallots" min="0" placeholder="빈칸"
+            class="w-28 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 text-center font-mono focus:border-amber-500 focus:outline-none"
+            oninput="handleStateUpdate()">
+          <span class="text-slate-400">표</span>
+        </div>
+
+        <div class="flex items-center justify-end">
+          <label class="inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="adminAutoConfirm" checked onchange="handleStateUpdate()" class="sr-only peer">
+            <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-600"></div>
+            <span class="ml-2 text-slate-300">기준표 도달 시 자동 '확정' 처리</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2단계: 후보자 10명 입력 (좌우 2단 분할 레이아웃) -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl backdrop-blur-sm">
+      <div class="flex items-center justify-between pb-3.5 border-b border-slate-800">
+        <div class="flex items-center space-x-2">
+          <span class="w-6 h-6 rounded bg-amber-500/20 text-amber-400 text-xs font-bold flex items-center justify-center font-mono">2</span>
+          <h2 class="font-serif text-base font-bold text-amber-100">후보자 성명 및 득표수 입력 (최대 10명)</h2>
+        </div>
+        <span class="text-xs text-slate-500">좌측 5명 / 우측 5명</span>
+      </div>
+
+      <!-- 좌우 2단 그리드 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+        <!-- 좌측 1~5 -->
+        <div class="space-y-2.5">
+          <div class="text-xs font-semibold text-amber-400/80 px-1 flex justify-between">
+            <span>기호 1 ~ 5 번</span>
+            <span class="text-slate-500 font-normal">좌측 열</span>
+          </div>
+          <div id="adminSlotsLeft" class="space-y-2.5"></div>
+        </div>
+
+        <!-- 우측 6~10 -->
+        <div class="space-y-2.5">
+          <div class="text-xs font-semibold text-amber-400/80 px-1 flex justify-between">
+            <span>기호 6 ~ 10 번</span>
+            <span class="text-slate-500 font-normal">우측 열</span>
+          </div>
+          <div id="adminSlotsRight" class="space-y-2.5"></div>
+        </div>
+      </div>
+
+      <!-- 하단 바로가기 -->
+      <div class="mt-6 pt-4 border-t border-slate-800 flex justify-end">
+        <button onclick="switchMode('display')" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold rounded-xl text-xs transition-colors flex items-center gap-2">
+          <span>16:9 공개 화면 확인하기</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= 2. 16:9 와이드스크린 공개용 보고 화면 (DISPLAY VIEW) ================= -->
+  <section id="displaySection" class="hidden flex-grow flex items-center justify-center p-2 sm:p-4">
+    
+    <!-- 16:9 스크린 컨테이너 -->
+    <div id="displayScreen" class="screen-16-9 sacred-gradient rounded-3xl border border-amber-500/30 p-6 sm:p-8 lg:p-10 shadow-2xl relative">
+      
+      <!-- 배경 십자가 워터마크 -->
+      <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none text-amber-300">
+        <svg class="w-[45vw] h-[45vw] max-w-[650px] max-h-[650px] fill-current" viewBox="0 0 24 24">
+          <path d="M11 2h2v6h5v2h-5v12h-2V10H6V8h5V2z"/>
+        </svg>
+      </div>
+
+      <!-- [상단 헤더] 교회명 및 공식 명칭 -->
+      <div class="relative z-10 text-center pb-3 border-b border-amber-500/20">
+        <div class="flex items-center justify-center space-x-2 text-amber-400/90 text-xs sm:text-sm tracking-widest font-serif uppercase">
+          <span>†</span>
+          <span id="dispChurch">고산교회</span>
+          <span>†</span>
+        </div>
+
+        <div class="mt-1 flex items-center justify-center gap-3">
+          <h1 id="dispMainTitle" class="font-serif text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300">
+            항존직 피택선거
+          </h1>
+          <span id="dispOfficeBadge" class="bg-amber-500/20 border border-amber-500/50 text-amber-300 px-3 py-1 rounded-xl font-serif text-sm sm:text-xl font-bold">
+            장로
+          </span>
+        </div>
+
+        <!-- 기준표 및 총투표수 지표 줄 -->
+        <div class="mt-2.5 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-slate-300">
+          <span id="dispThresholdWrap" class="px-3 py-1 rounded-full bg-amber-950/40 border border-amber-600/30 text-amber-200 flex items-center gap-1.5">
+            <i data-lucide="target" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>피택 기준: <strong id="dispThresholdVal" class="font-mono text-amber-300">-</strong>표</span>
+          </span>
+          <span id="dispTotalWrap" class="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+            <i data-lucide="vote" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>총 투표수: <strong id="dispTotalVal" class="font-mono text-white">-</strong>표</span>
+          </span>
+          <span class="px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+            <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>피택 확정: <strong id="dispConfirmedCount" class="font-mono text-amber-300">0</strong>명</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- [중앙 본문] 다득표 순 후보자 카드 (빈칸 자동제외 & 좌우 2열 균등 배치) -->
+      <div id="displayCardsArea" class="relative z-10 flex-grow my-auto flex flex-col justify-center py-2">
+        <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 w-full">
+          <!-- JS 동적 주입 -->
+        </div>
+
+        <!-- 후보자 없을 때 -->
+        <div id="noCandidatesNotice" class="text-center py-10 hidden">
+          <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 text-slate-600 mx-auto flex items-center justify-center mb-3">
+            <i data-lucide="inbox" class="w-6 h-6"></i>
+          </div>
+          <p class="font-serif text-slate-300 text-base">등록된 후보자가 없습니다.</p>
+          <p class="text-xs text-slate-500 mt-1">[입력 관리] 메뉴에서 후보자 이름과 득표수를 입력하십시오.</p>
+        </div>
+      </div>
+
+      <!-- [하단 푸터] 은혜 구절 & 제어 툴바 -->
+      <div class="relative z-10 pt-2 border-t border-amber-500/20 flex items-center justify-between text-slate-400 text-xs">
+        <p class="font-serif text-[11px] sm:text-xs text-amber-200/70 italic truncate">
+          "사람을 세우시는 여호와 하나님의 은혜가 고산교회 위에 충만하기를 기도합니다."
+        </p>
+
+        <!-- 프로젝터 제어 툴바 (인쇄 시 숨김) -->
+        <div class="no-print flex items-center space-x-2">
+          <button onclick="toggleFullScreen()" class="p-1.5 hover:text-amber-300 bg-slate-900/80 border border-slate-800 rounded-lg text-xs flex items-center gap-1">
+            <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">전체화면</span>
+          </button>
+          <button onclick="switchMode('admin')" class="p-1.5 hover:text-slate-200 bg-slate-900/80 border border-slate-800 rounded-lg text-xs flex items-center gap-1">
+            <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">관리창</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= 초기화 확인 다이얼로그 모달 ================= -->
+  <div id="confirmResetModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+      <div class="w-12 h-12 rounded-full bg-red-950/40 border border-red-500/30 text-red-400 mx-auto flex items-center justify-center mb-3">
+        <i data-lucide="alert-circle" class="w-6 h-6"></i>
+      </div>
+      <h3 class="font-serif text-lg font-bold text-white">모든 데이터를 백지로 초기화할까요?</h3>
+      <p class="text-xs text-slate-400 mt-2">
+        이름과 득표수, 기준표가 모두 깨끗한 빈칸으로 재설정됩니다.
+      </p>
+      <div class="flex items-center justify-center space-x-3 mt-6">
+        <button onclick="hideResetDialog()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold">취소</button>
+        <button onclick="executeFullReset()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold shadow">초기화 실행</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V3';
+    const SYNC_CHANNEL = 'gosan_election_channel';
+
+    // BroadcastChannel 지원 (새 창과 0.001초 실시간 통신)
+    let bc = null;
+    try {
+      bc = new BroadcastChannel(SYNC_CHANNEL);
+      bc.onmessage = (event) => {
+        if (event.data && event.data.type === 'SYNC') {
+          appState = event.data.payload;
+          updateUI(false);
+        }
+      };
+    } catch(e) {
+      console.warn('BroadcastChannel not supported, falling back to storage listener');
+    }
+
+    // 다른 탭/창과의 storage 이벤트 연동
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          appState = JSON.parse(e.newValue);
+          updateUI(false);
+        } catch(err) {}
+      }
+    });
+
+    // 기본 완전 백지(Clean) 데이터 구조 (요구사항: 고산교회, 항존직 피택선거, 빈칸)
+    function getCleanState() {
+      return {
+        churchName: '고산교회',
+        electionTitle: '항존직 피택선거',
+        officeTitle: '장로',
+        thresholdVotes: '', // 빈칸
+        totalBallots: '',   // 빈칸
+        autoConfirm: true,
+        // 샘플 이름(김베드로 등) 전혀 없는 깨끗한 10개 슬롯
+        candidates: Array.from({ length: 10 }, (_, i) => ({
+          id: i + 1,
+          name: '',
+          votes: '',
+          manualConfirmed: null
+        }))
+      };
+    }
+
+    let appState = loadState();
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // 과거 데이터의 김베드로 등이 남아있다면 정화
+          if (parsed.candidates && parsed.candidates.some(c => c.name.includes('베드로'))) {
+            return getCleanState();
+          }
+          return parsed;
+        }
+      } catch (e) {}
+      return getCleanState();
+    }
+
+    function saveAndBroadcast() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        if (bc) {
+          bc.postMessage({ type: 'SYNC', payload: appState });
+        }
+      } catch (e) {}
+    }
+
+    // 초기화 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      // URL 쿼리 파라미터 확인 (?view=display 이면 즉시 16:9 공개화면 모드로 진입)
+      const urlParams = new URLSearchParams(window.location.search);
+      const viewParam = urlParams.get('view');
+
+      if (viewParam === 'display') {
+        switchMode('display', false);
+        // 공개화면 단독 모드일 때는 상단 네비바 최소화
+        document.getElementById('globalHeader').classList.add('hidden');
+      } else {
+        switchMode('admin', false);
+      }
+
+      updateUI(true);
+      lucide.createIcons();
+    });
+
+    // 전체 UI 동기화 (입력 폼 + 공개 화면)
+    function updateUI(syncInputs = true) {
+      if (syncInputs) {
+        syncAdminInputs();
+      }
+      renderAdminCandidateSlots();
+      renderDisplayBoard();
+      lucide.createIcons();
+    }
+
+    // 관리자 입력 폼 값 채우기
+    function syncAdminInputs() {
+      document.getElementById('adminChurchName').value = appState.churchName || '고산교회';
+      document.getElementById('adminElectionTitle').value = appState.electionTitle || '항존직 피택선거';
+      document.getElementById('adminOfficeTitle').value = appState.officeTitle || '장로';
+      document.getElementById('adminThreshold').value = appState.thresholdVotes || '';
+      document.getElementById('adminTotalBallots').value = appState.totalBallots || '';
+      document.getElementById('adminAutoConfirm').checked = !!appState.autoConfirm;
+
+      const sel = document.getElementById('officeSelect');
+      if (['장로', '안수집사', '권사'].includes(appState.officeTitle)) {
+        sel.value = appState.officeTitle;
+      } else {
+        sel.value = 'custom';
+      }
+    }
+
+    // 직분 선택 드롭다운
+    function changeOffice(val) {
+      const officeInput = document.getElementById('adminOfficeTitle');
+      if (val !== 'custom') {
+        officeInput.value = val;
+      } else {
+        officeInput.value = '';
+        officeInput.focus();
+      }
+      handleStateUpdate();
+    }
+
+    // 기본 정보 변경 이벤트 핸들러
+    function handleStateUpdate() {
+      appState.churchName = document.getElementById('adminChurchName').value.trim();
+      appState.electionTitle = document.getElementById('adminElectionTitle').value.trim();
+      appState.officeTitle = document.getElementById('adminOfficeTitle').value.trim();
+      appState.thresholdVotes = document.getElementById('adminThreshold').value;
+      appState.totalBallots = document.getElementById('adminTotalBallots').value;
+      appState.autoConfirm = document.getElementById('adminAutoConfirm').checked;
+
+      saveAndBroadcast();
+      renderDisplayBoard();
+    }
+
+    // 관리자 후보자 입력 슬롯 생성 (좌측 1~5, 우측 6~10)
+    function renderAdminCandidateSlots() {
+      const leftCol = document.getElementById('adminSlotsLeft');
+      const rightCol = document.getElementById('adminSlotsRight');
+      leftCol.innerHTML = '';
+      rightCol.innerHTML = '';
+
+      appState.candidates.forEach((cand, idx) => {
+        const slotEl = document.createElement('div');
+        const isConfirmed = isCandidateConfirmed(cand);
+        
+        slotEl.className = `p-2.5 rounded-xl border transition-all ${
+          cand.name.trim() 
+            ? (isConfirmed ? 'bg-amber-950/25 border-amber-500/40' : 'bg-slate-950/70 border-slate-800') 
+            : 'bg-slate-950/30 border-slate-900 border-dashed'
+        }`;
+
+        slotEl.innerHTML = `
+          <div class="flex items-center gap-2">
+            <!-- 기호 -->
+            <span class="w-6 h-6 rounded-md bg-slate-800 text-slate-400 text-xs font-mono font-bold flex items-center justify-center flex-shrink-0">
+              ${cand.id}
+            </span>
+
+            <!-- 성명 -->
+            <input 
+              type="text" 
+              placeholder="후보자 성명" 
+              value="${escapeHtml(cand.name)}" 
+              oninput="handleCandidateName(${idx}, this.value)"
+              class="flex-1 min-w-0 bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500"
+            />
+
+            <!-- 득표수 -->
+            <div class="relative w-20 flex-shrink-0">
+              <input 
+                type="number" 
+                min="0" 
+                placeholder="0"
+                value="${cand.votes !== '' ? cand.votes : ''}" 
+                oninput="handleCandidateVotes(${idx}, this.value)"
+                class="w-full bg-slate-900 border border-slate-700/80 rounded-lg pr-6 pl-2 py-1.5 text-xs sm:text-sm font-mono font-bold text-amber-300 text-right focus:outline-none focus:border-amber-500"
+              />
+              <span class="absolute right-2 top-2 text-[10px] text-slate-500 pointer-events-none">표</span>
+            </div>
+
+            <!-- 확정 수동 토글 버튼 (요구사항 5: 확정 버튼) -->
+            <button 
+              type="button" 
+              onclick="toggleManualConfirm(${idx})" 
+              title="피택 확정 상태 토글"
+              class="px-2 py-1.5 rounded-lg text-xs font-medium border flex items-center gap-1 transition-all flex-shrink-0 ${
+                isConfirmed 
+                  ? 'bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-sm' 
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border-slate-700'
+              }">
+              <i data-lucide="${isConfirmed ? 'check-circle-2' : 'circle'}" class="w-3 h-3"></i>
+              <span>확정</span>
+            </button>
+          </div>
+        `;
+
+        if (idx < 5) leftCol.appendChild(slotEl);
+        else rightCol.appendChild(slotEl);
+      });
+    }
+
+    // 확정 여부 판정 로직
+    function isCandidateConfirmed(cand) {
+      if (!cand.name || !cand.name.trim()) return false;
+      if (cand.manualConfirmed !== null) {
+        return cand.manualConfirmed;
+      }
+      const numVotes = parseInt(cand.votes, 10) || 0;
+      const threshold = parseInt(appState.thresholdVotes, 10);
+      if (appState.autoConfirm && !isNaN(threshold) && threshold > 0) {
+        return numVotes >= threshold;
+      }
+      return false;
+    }
+
+    function handleCandidateName(idx, val) {
+      appState.candidates[idx].name = val;
+      saveAndBroadcast();
+      renderDisplayBoard();
+    }
+
+    function handleCandidateVotes(idx, val) {
+      appState.candidates[idx].votes = val === '' ? '' : Math.max(0, parseInt(val, 10) || 0);
+      saveAndBroadcast();
+      renderDisplayBoard();
+      // 해당 카드의 확정 상태 갱신
+      renderAdminCandidateSlots();
+      lucide.createIcons();
+    }
+
+    function toggleManualConfirm(idx) {
+      const cand = appState.candidates[idx];
+      const cur = isCandidateConfirmed(cand);
+      cand.manualConfirmed = !cur;
+      saveAndBroadcast();
+      renderAdminCandidateSlots();
+      renderDisplayBoard();
+      lucide.createIcons();
+    }
+
+    // ================= 16:9 공개 화면 렌더링 =================
+    function renderDisplayBoard() {
+      // 1. 헤더 텍스트 반영
+      document.getElementById('dispChurch').textContent = appState.churchName || '고산교회';
+      document.getElementById('dispMainTitle').textContent = appState.electionTitle || '항존직 피택선거';
+      
+      const officeBadge = document.getElementById('dispOfficeBadge');
+      if (appState.officeTitle) {
+        officeBadge.textContent = appState.officeTitle;
+        officeBadge.classList.remove('hidden');
+      } else {
+        officeBadge.classList.add('hidden');
+      }
+
+      // 기준표 및 총투표수 표시 제어
+      const threshVal = parseInt(appState.thresholdVotes, 10);
+      const threshWrap = document.getElementById('dispThresholdWrap');
+      if (!isNaN(threshVal) && threshVal > 0) {
+        document.getElementById('dispThresholdVal').textContent = threshVal;
+        threshWrap.classList.remove('hidden');
+      } else {
+        threshWrap.classList.add('hidden');
+      }
+
+      const totalVal = parseInt(appState.totalBallots, 10);
+      const totalWrap = document.getElementById('dispTotalWrap');
+      if (!isNaN(totalVal) && totalVal > 0) {
+        document.getElementById('dispTotalVal').textContent = totalVal;
+        totalWrap.classList.remove('hidden');
+      } else {
+        totalWrap.classList.add('hidden');
+      }
+
+      // 2. 유효한 후보자만 추출 (이름이 없는 칸은 아예 삭제)
+      const validList = appState.candidates
+        .filter(c => c.name && c.name.trim().length > 0)
+        .map(c => ({
+          ...c,
+          numVotes: parseInt(c.votes, 10) || 0,
+          confirmed: isCandidateConfirmed(c)
+        }));
+
+      // 3. 다득표 순(내림차순) 정렬
+      validList.sort((a, b) => {
+        if (b.numVotes !== a.numVotes) return b.numVotes - a.numVotes;
+        return a.id - b.id; // 동점시 기호 순
+      });
+
+      const confirmedCount = validList.filter(c => c.confirmed).length;
+      document.getElementById('dispConfirmedCount').textContent = confirmedCount;
+
+      const grid = document.getElementById('cardsGrid');
+      const emptyBox = document.getElementById('noCandidatesNotice');
+      grid.innerHTML = '';
+
+      if (validList.length === 0) {
+        emptyBox.classList.remove('hidden');
+        return;
+      } else {
+        emptyBox.classList.add('hidden');
+      }
+
+      // 좌우 균형 배치 클래스
+      if (validList.length === 1) {
+        grid.className = 'max-w-xl mx-auto w-full';
+      } else {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 w-full';
+      }
+
+      // 게이지 바 기준값
+      const maxVotes = Math.max(...validList.map(c => c.numVotes), 1);
+      const baseForGauge = (!isNaN(totalVal) && totalVal > 0) ? totalVal : maxVotes;
+
+      // 순위 계산 (동석차 처리)
+      let currentRank = 1;
+      validList.forEach((cand, idx) => {
+        if (idx > 0 && cand.numVotes < validList[idx - 1].numVotes) {
+          currentRank = idx + 1;
+        }
+
+        const pct = Math.min(100, Math.round((cand.numVotes / baseForGauge) * 100));
+        const card = createDisplayCard(cand, currentRank, pct);
+        grid.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    // 16:9 와이드 화면에 최적화된 결과 카드 엘리먼트 생성
+    function createDisplayCard(cand, rank, pct) {
+      const el = document.createElement('div');
+      const isConf = cand.confirmed;
+
+      // 1위, 2위 배지 스타일
+      let rankColor = 'bg-slate-800 text-slate-300 border-slate-700';
+      if (rank === 1) rankColor = 'bg-amber-500/20 text-amber-300 border-amber-500/60 font-bold';
+      else if (rank === 2) rankColor = 'bg-slate-400/20 text-slate-200 border-slate-400/50 font-bold';
+      else if (rank === 3) rankColor = 'bg-amber-900/30 text-amber-400 border-amber-800/40';
+
+      el.className = `relative rounded-2xl p-4 sm:p-5 transition-all duration-300 ${
+        isConf 
+          ? 'bg-gradient-to-r from-amber-950/50 via-slate-900/90 to-amber-950/30 border-2 border-amber-500/80 shadow-xl' 
+          : 'bg-church-navyCard/90 border border-slate-800 shadow'
+      }`;
+
+      el.innerHTML = `
+        <!-- 요구사항 5: 득표수 우측 위 확정 버튼/배지 -->
+        ${isConf ? `
+          <div class="absolute -top-3.5 right-4 z-20">
+            <div class="pulse-gold bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 border border-amber-200 shadow-lg">
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>피택 확정</span>
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="flex items-center justify-between">
+          <!-- 순번 & 이름 -->
+          <div class="flex items-center space-x-3.5">
+            <div class="w-10 h-10 rounded-xl border flex items-center justify-center font-serif text-base font-bold flex-shrink-0 ${rankColor}">
+              ${rank}위
+            </div>
+            <div>
+              <div class="flex items-baseline space-x-2">
+                <span class="font-serif text-xl sm:text-2xl font-black text-white tracking-tight">${escapeHtml(cand.name)}</span>
+                <span class="text-xs text-slate-400 font-sans">후보</span>
+              </div>
+              <span class="text-[11px] text-slate-500 font-mono">기호 ${cand.id}번</span>
+            </div>
+          </div>
+
+          <!-- 득표수 표기 -->
+          <div class="text-right flex items-baseline space-x-1 pr-2">
+            <span class="font-mono text-3xl sm:text-4xl font-extrabold ${isConf ? 'text-amber-300' : 'text-slate-100'}">
+              ${cand.numVotes}
+            </span>
+            <span class="text-xs sm:text-sm font-serif text-slate-400">표</span>
+          </div>
+        </div>
+
+        <!-- 득표 게이지 바 -->
+        <div class="mt-3.5">
+          <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+            <div 
+              class="h-full rounded-full transition-all duration-500 ${isConf ? 'bg-gradient-to-r from-amber-500 to-yellow-300' : 'bg-slate-500'}" 
+              style="width: ${pct}%">
+            </div>
+          </div>
+          <div class="flex justify-between items-center text-[10px] sm:text-[11px] text-slate-400 mt-1.5 px-0.5 font-mono">
+            <span>득표율: <strong class="text-slate-300">${pct}%</strong></span>
+            ${appState.thresholdVotes ? `
+              <span>
+                ${cand.numVotes >= parseInt(appState.thresholdVotes, 10) 
+                  ? '<span class="text-amber-400 font-semibold">기준 달성</span>' 
+                  : `기준까지 ${parseInt(appState.thresholdVotes, 10) - cand.numVotes}표`}
+              </span>
+            ` : ''}
+          </div>
+        </div>
+      `;
+      return el;
+    }
+
+    // ================= 모드 전환 및 유틸리티 =================
+    function switchMode(mode, sync = true) {
+      const adminSec = document.getElementById('adminSection');
+      const dispSec = document.getElementById('displaySection');
+      const tabAdmin = document.getElementById('tabAdminBtn');
+      const tabDisp = document.getElementById('tabDisplayBtn');
+
+      if (mode === 'admin') {
+        adminSec.classList.remove('hidden');
+        dispSec.classList.add('hidden');
+        tabAdmin.className = "px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all text-amber-300 bg-amber-600/20 border border-amber-500/40 flex items-center gap-1.5";
+        tabDisp.className = "px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5";
+        if (sync) updateUI(true);
+      } else {
+        adminSec.classList.add('hidden');
+        dispSec.classList.remove('hidden');
+        tabDisp.className = "px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all text-amber-300 bg-amber-600/20 border border-amber-500/40 flex items-center gap-1.5";
+        tabAdmin.className = "px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all flex items-center gap-1.5";
+        if (sync) renderDisplayBoard();
+      }
+      lucide.createIcons();
+    }
+
+    // 듀얼모니터 전용: 새 창으로 16:9 공개보고 열기 (URL 파라미터 활용)
+    function openDisplayWindow() {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('view', 'display');
+      window.open(currentUrl.toString(), 'GosanChurchElectionScreen', 'width=1280,height=720,menubar=no,toolbar=no,location=no');
+    }
+
+    // 전체화면 토글
+    function toggleFullScreen() {
+      const target = document.getElementById('displayScreen') || document.documentElement;
+      if (!document.fullscreenElement) {
+        target.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // 초기화 모달
+    function showResetDialog() {
+      document.getElementById('confirmResetModal').classList.remove('hidden');
+    }
+
+    function hideResetDialog() {
+      document.getElementById('confirmResetModal').classList.add('hidden');
+    }
+
+    function executeFullReset() {
+      localStorage.removeItem(STORAGE_KEY);
+      appState = getCleanState();
+      saveAndBroadcast();
+      syncAdminInputs();
+      renderAdminCandidateSlots();
+      renderDisplayBoard();
+      hideResetDialog();
+      lucide.createIcons();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

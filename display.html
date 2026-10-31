@@ -50,7 +50,7 @@
       <svg class="w-[50vw] h-[50vw] max-w-[650px] max-h-[650px] fill-current" viewBox="0 0 24 24"><path d="M11 2h2v6h5v2h-5v12h-2V10H6V8h5V2z"/></svg>
     </div>
 
-    <!-- [상단 헤더] 타이틀과 하단 3개 박스 간격 -->
+    <!-- [상단 헤더] -->
     <div class="relative z-10 text-center pb-4 pt-1 border-b-2 border-amber-500/20 mb-8 sm:mb-10">
       <div class="flex items-center justify-center space-x-3 text-amber-400 text-base sm:text-xl tracking-widest font-serif uppercase mb-2">
         <span>†</span>
@@ -91,7 +91,7 @@
 
       <div id="noCandidatesNotice" class="text-center py-16 hidden">
         <p class="font-serif text-slate-300 text-2xl font-bold">등록된 후보자가 없습니다.</p>
-        <p class="text-base text-slate-400 mt-2">관리자 입력 화면에서 후보를 등록해 주세요.</p>
+        <p class="text-base text-slate-400 mt-2">관리자 입력 화면에서 후보를 등록한 뒤 [방송 화면으로 송출하기]를 눌러주세요.</p>
       </div>
     </div>
 
@@ -111,24 +111,9 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V7';
-    const SYNC_CHANNEL = 'gosan_election_channel_v7';
+    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V8';
 
-    let bc = null;
-    try {
-      bc = new BroadcastChannel(SYNC_CHANNEL);
-      bc.onmessage = (event) => {
-        if (event.data && event.data.type === 'SYNC') renderDisplayBoard(event.data.payload);
-      };
-    } catch(e) {}
-
-    window.addEventListener('storage', (e) => {
-      if (e.key === STORAGE_KEY && e.newValue) {
-        try { renderDisplayBoard(JSON.parse(e.newValue)); } catch(err) {}
-      }
-    });
-
-    // 다른 컴퓨터(다른 인터넷망)에서도 확실하게 싱크를 맞추기 위해 0.5초마다 강제 동기화 체크 루프 실행
+    // 송출용 화면은 0.5초마다 저장된 최신 송출 데이터를 읽어옴
     setInterval(() => {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);

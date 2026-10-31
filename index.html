@@ -19,7 +19,7 @@
       </div>
       <div>
         <h1 class="font-serif text-2xl font-black text-amber-200">고산교회 항존직 피택선거</h1>
-        <p class="text-sm text-slate-300">관리자 입력 시스템 (실시간 클라우드 싱크)</p>
+        <p class="text-sm text-slate-300">관리자 입력 시스템 (수동 송출 모드)</p>
       </div>
     </div>
     <div class="flex items-center space-x-3">
@@ -36,12 +36,16 @@
 
   <main class="flex-grow w-full max-w-7xl mx-auto space-y-6">
     
-    <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl px-4 py-2.5 flex items-center justify-between shadow-md max-w-xl">
-      <div class="flex items-center space-x-2.5">
-        <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
-        <span class="text-xs font-bold text-amber-300">네트워크 분리 환경 실시간 싱크 활성</span>
+    <!-- 송출 버튼이 포함된 상단 안내 바 -->
+    <div class="bg-slate-900/90 border-2 border-amber-500/60 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+      <div class="flex items-center space-x-3">
+        <div class="w-3.5 h-3.5 rounded-full bg-amber-400 animate-pulse"></div>
+        <span class="text-sm font-bold text-amber-200">작업을 마친 후 아래 버튼을 누르면 방송 화면에 적용됩니다.</span>
       </div>
-      <span class="text-[11px] text-emerald-400 font-mono font-bold">ACTIVE SYNC</span>
+      <button onclick="publishToDisplay()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 text-lg font-black rounded-xl shadow-2xl flex items-center justify-center gap-2 transition-transform active:scale-95">
+        <i data-lucide="send" class="w-6 h-6"></i>
+        <span>방송 화면으로 송출하기</span>
+      </button>
     </div>
 
     <!-- 1단계 기본 정보 -->
@@ -54,7 +58,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div>
           <label class="block text-sm font-bold text-slate-300 mb-2">소속 교회명</label>
-          <input type="text" id="adminChurchName" value="고산교회" class="w-full bg-slate-950 border-2 border-slate-700 rounded-2xl px-4 py-3.5 text-lg text-slate-100 font-bold focus:border-amber-500 focus:outline-none" oninput="handleStateUpdate()">
+          <input type="text" id="adminChurchName" value="고산교회" class="w-full bg-slate-950 border-2 border-slate-700 rounded-2xl px-4 py-3.5 text-lg text-slate-100 font-bold focus:border-amber-500 focus:outline-none">
         </div>
         <div>
           <label class="block text-sm font-bold text-slate-300 mb-2">선출 직분 (타이틀)</label>
@@ -65,12 +69,12 @@
               <option value="권사">권사 (1/2)</option>
               <option value="custom">직접입력</option>
             </select>
-            <input type="text" id="adminOfficeTitle" value="장로" class="w-1/2 bg-slate-950 border-2 border-slate-700 rounded-2xl px-3 py-3.5 text-base text-amber-300 font-black focus:border-amber-500 focus:outline-none" oninput="handleStateUpdate()">
+            <input type="text" id="adminOfficeTitle" value="장로" class="w-1/2 bg-slate-950 border-2 border-slate-700 rounded-2xl px-3 py-3.5 text-base text-amber-300 font-black focus:border-amber-500 focus:outline-none">
           </div>
         </div>
         <div>
           <label class="block text-sm font-bold text-slate-300 mb-2">선거 공식 명칭</label>
-          <input type="text" id="adminElectionTitle" value="항존직 피택선거" class="w-full bg-slate-950 border-2 border-slate-700 rounded-2xl px-4 py-3.5 text-lg text-amber-200 font-bold focus:border-amber-500 focus:outline-none" oninput="handleStateUpdate()">
+          <input type="text" id="adminElectionTitle" value="항존직 피택선거" class="w-full bg-slate-950 border-2 border-slate-700 rounded-2xl px-4 py-3.5 text-lg text-amber-200 font-bold focus:border-amber-500 focus:outline-none">
         </div>
         <div>
           <label class="block text-sm font-bold text-amber-400 mb-2">총 투표자(투표수)</label>
@@ -82,13 +86,13 @@
         <div>
           <label class="block text-sm font-bold text-amber-400 mb-2">피택 확정 기준 득표수</label>
           <div class="flex items-center space-x-3">
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="adminThreshold" placeholder="기준표" class="w-full bg-slate-950 border-2 border-amber-500/60 rounded-2xl px-4 py-3.5 text-xl text-amber-300 font-mono font-black focus:border-amber-400 focus:outline-none" oninput="handleStateUpdate()">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="adminThreshold" placeholder="기준표" class="w-full bg-slate-950 border-2 border-amber-500/60 rounded-2xl px-4 py-3.5 text-xl text-amber-300 font-mono font-black focus:border-amber-400 focus:outline-none">
             <span class="text-base font-bold text-slate-400 whitespace-nowrap">표 이상</span>
           </div>
         </div>
         <div class="flex items-center justify-start md:justify-end pt-4 md:pt-0">
           <label class="inline-flex items-center cursor-pointer bg-slate-950 border-2 border-slate-800 px-6 py-3.5 rounded-2xl">
-            <input type="checkbox" id="adminAutoConfirm" checked onchange="handleStateUpdate()" class="sr-only peer">
+            <input type="checkbox" id="adminAutoConfirm" checked class="sr-only peer">
             <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 relative"></div>
             <span class="ml-3 text-base font-bold text-slate-200">기준표 도달 시 자동 '확정' 처리</span>
           </label>
@@ -117,6 +121,14 @@
         </div>
       </div>
     </div>
+
+    <!-- 하단 송출 버튼 추가 -->
+    <div class="text-center pb-8">
+      <button onclick="publishToDisplay()" class="px-12 py-5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 text-2xl font-black rounded-2xl shadow-2xl inline-flex items-center gap-3 transition-transform active:scale-95">
+        <i data-lucide="send" class="w-7 h-7"></i>
+        <span>방송 화면으로 송출하기</span>
+      </button>
+    </div>
   </main>
 
   <div id="confirmResetModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -131,13 +143,15 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V7';
-    const SYNC_CHANNEL = 'gosan_election_channel_v7';
+    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V8';
 
-    let bc = null;
-    try { bc = new BroadcastChannel(SYNC_CHANNEL); } catch(e) {}
+    let appState = loadState();
 
-    function getCleanState() {
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
       return {
         churchName: '고산교회',
         electionTitle: '항존직 피택선거',
@@ -149,21 +163,21 @@
       };
     }
 
-    let appState = loadState();
+    // [송출하기] 버튼을 누를 때만 데이터를 저장하고 방송 화면에 전송
+    function publishToDisplay() {
+      appState.churchName = document.getElementById('adminChurchName').value.trim();
+      appState.electionTitle = document.getElementById('adminElectionTitle').value.trim();
+      appState.officeTitle = document.getElementById('adminOfficeTitle').value.trim();
+      appState.thresholdVotes = document.getElementById('adminThreshold').value;
+      appState.totalBallots = document.getElementById('adminTotalBallots').value;
+      appState.autoConfirm = document.getElementById('adminAutoConfirm').checked;
 
-    function loadState() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) return JSON.parse(saved);
-      } catch (e) {}
-      return getCleanState();
-    }
-
-    function saveAndBroadcast() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-        if (bc) bc.postMessage({ type: 'SYNC', payload: appState });
-      } catch (e) {}
+        alert('✨ 방송 화면으로 성공적으로 송출되었습니다!');
+      } catch (e) {
+        alert('송출 중 오류가 발생했습니다.');
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -197,19 +211,17 @@
         officeInput.focus();
       }
       calculateThreshold();
-      handleStateUpdate();
     }
 
     function handleTotalBallotsInput(val) {
       const cleaned = val.replace(/[^0-9]/g, '');
       appState.totalBallots = cleaned;
       calculateThreshold();
-      handleStateUpdate();
     }
 
     function calculateThreshold() {
-      const total = parseInt(appState.totalBallots, 10);
-      const office = appState.officeTitle;
+      const total = parseInt(document.getElementById('adminTotalBallots').value, 10);
+      const office = document.getElementById('adminOfficeTitle').value;
       if (!isNaN(total) && total > 0) {
         let calc = 0;
         if (office === '장로') {
@@ -222,17 +234,6 @@
           document.getElementById('adminThreshold').value = calc;
         }
       }
-    }
-
-    function handleStateUpdate() {
-      appState.churchName = document.getElementById('adminChurchName').value.trim();
-      appState.electionTitle = document.getElementById('adminElectionTitle').value.trim();
-      appState.officeTitle = document.getElementById('adminOfficeTitle').value.trim();
-      appState.thresholdVotes = document.getElementById('adminThreshold').value;
-      appState.totalBallots = document.getElementById('adminTotalBallots').value;
-      appState.autoConfirm = document.getElementById('adminAutoConfirm').checked;
-
-      saveAndBroadcast();
     }
 
     function renderAdminCandidateSlots() {
@@ -260,7 +261,7 @@
               type="text" 
               placeholder="후보자 성명" 
               value="${escapeHtml(cand.name)}" 
-              oninput="handleCandidateName(${idx}, this.value)"
+              oninput="appState.candidates[${idx}].name = this.value"
               class="w-40 sm:w-48 bg-slate-900 border-2 border-slate-700 rounded-xl px-4 py-3 text-xl font-bold text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500"
             />
             
@@ -306,36 +307,29 @@
       if (!cand.name || !cand.name.trim()) return false;
       if (cand.manualConfirmed !== null) return cand.manualConfirmed;
       const numVotes = parseInt(cand.votes, 10) || 0;
-      const threshold = parseInt(appState.thresholdVotes, 10);
-      if (appState.autoConfirm && !isNaN(threshold) && threshold > 0) {
+      const threshold = parseInt(document.getElementById('adminThreshold').value, 10);
+      const autoConfirm = document.getElementById('adminAutoConfirm').checked;
+      if (autoConfirm && !isNaN(threshold) && threshold > 0) {
         return numVotes >= threshold;
       }
       return false;
     }
 
-    function handleCandidateName(idx, val) {
-      appState.candidates[idx].name = val;
-      saveAndBroadcast();
-    }
-
     function handleCandidateVotes(idx, val) {
       const cleaned = val.replace(/[^0-9]/g, '');
       appState.candidates[idx].votes = cleaned === '' ? '' : parseInt(cleaned, 10);
-      saveAndBroadcast();
     }
 
     function adjustVotes(idx, amount) {
       const current = parseInt(appState.candidates[idx].votes, 10) || 0;
       const next = Math.max(0, current + amount);
       appState.candidates[idx].votes = next;
-      saveAndBroadcast();
       renderAdminCandidateSlots();
     }
 
     function toggleManualConfirm(idx) {
       const cand = appState.candidates[idx];
       cand.manualConfirmed = !isCandidateConfirmed(cand);
-      saveAndBroadcast();
       renderAdminCandidateSlots();
     }
 
@@ -350,6 +344,11 @@
       hideResetDialog();
       lucide.createIcons();
     }
+
+    function saveAndBroadcast() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    }
+
     function escapeHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');

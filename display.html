@@ -50,7 +50,7 @@
       <svg class="w-[50vw] h-[50vw] max-w-[650px] max-h-[650px] fill-current" viewBox="0 0 24 24"><path d="M11 2h2v6h5v2h-5v12h-2V10H6V8h5V2z"/></svg>
     </div>
 
-    <!-- [상단 헤더] 타이틀과 하단 3개 박스 간격 유지 -->
+    <!-- [상단 헤더] 타이틀과 하단 3개 박스 간격 -->
     <div class="relative z-10 text-center pb-4 pt-1 border-b-2 border-amber-500/20 mb-8 sm:mb-10">
       <div class="flex items-center justify-center space-x-3 text-amber-400 text-base sm:text-xl tracking-widest font-serif uppercase mb-2">
         <span>†</span>
@@ -111,8 +111,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V6';
-    const SYNC_CHANNEL = 'gosan_election_channel_v6';
+    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V7';
+    const SYNC_CHANNEL = 'gosan_election_channel_v7';
 
     let bc = null;
     try {
@@ -128,16 +128,15 @@
       }
     });
 
-    // 다른 인터넷망(서로 다른 PC) 환경에서도 동기화되도록 주기적으로 스토리지 체크
+    // 다른 컴퓨터(다른 인터넷망)에서도 확실하게 싱크를 맞추기 위해 0.5초마다 강제 동기화 체크 루프 실행
     setInterval(() => {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-          const parsed = JSON.parse(saved);
-          renderDisplayBoard(parsed);
+          renderDisplayBoard(JSON.parse(saved));
         }
       } catch(e) {}
-    }, 1000);
+    }, 500);
 
     function getInitialState() {
       try {

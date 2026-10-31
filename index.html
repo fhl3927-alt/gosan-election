@@ -19,7 +19,7 @@
       </div>
       <div>
         <h1 class="font-serif text-2xl font-black text-amber-200">고산교회 항존직 피택선거</h1>
-        <p class="text-sm text-slate-300">관리자 입력 시스템 (인터넷망 연동 모드)</p>
+        <p class="text-sm text-slate-300">관리자 입력 시스템 (실시간 클라우드 싱크)</p>
       </div>
     </div>
     <div class="flex items-center space-x-3">
@@ -36,13 +36,12 @@
 
   <main class="flex-grow w-full max-w-7xl mx-auto space-y-6">
     
-    <!-- 작게 만든 실시간 싱크 상태 알림창 -->
     <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl px-4 py-2.5 flex items-center justify-between shadow-md max-w-xl">
       <div class="flex items-center space-x-2.5">
         <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
-        <span class="text-xs font-bold text-amber-300">클라우드 실시간 싱크 활성 (다른 인터넷망 호환)</span>
+        <span class="text-xs font-bold text-amber-300">네트워크 분리 환경 실시간 싱크 활성</span>
       </div>
-      <span class="text-[11px] text-emerald-400 font-mono font-bold">ONLINE SYNC</span>
+      <span class="text-[11px] text-emerald-400 font-mono font-bold">ACTIVE SYNC</span>
     </div>
 
     <!-- 1단계 기본 정보 -->
@@ -132,8 +131,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V6';
-    const SYNC_CHANNEL = 'gosan_election_channel_v6';
+    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V7';
+    const SYNC_CHANNEL = 'gosan_election_channel_v7';
 
     let bc = null;
     try { bc = new BroadcastChannel(SYNC_CHANNEL); } catch(e) {}

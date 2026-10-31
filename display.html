@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>고산교회 항존직 피택선거 - 16:9 스크린 송출</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@600;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .screen-16-9 {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      max-width: 1920px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .sacred-gradient {
+      background-color: #04060e;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(180, 140, 30, 0.12) 0%, transparent 70%),
+        radial-gradient(circle at 10% 90%, rgba(60, 15, 25, 0.2) 0%, transparent 60%),
+        radial-gradient(circle at 90% 90%, rgba(8, 12, 25, 0.7) 0%, transparent 60%);
+    }
+
+    .pulse-gold {
+      box-shadow: 0 0 30px rgba(234, 179, 8, 0.7);
+      animation: sacredGlow 2.2s infinite ease-in-out;
+    }
+
+    @keyframes sacredGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(234, 179, 8, 0.5); }
+      50% { transform: scale(1.03); box-shadow: 0 0 40px rgba(234, 179, 8, 0.9); }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex items-center justify-center p-1 sm:p-2">
+
+  <div id="displayScreen" class="screen-16-9 sacred-gradient rounded-3xl border-2 border-amber-500/30 px-8 py-6 sm:px-12 sm:py-8 shadow-2xl relative">
+    
+    <!-- 배경 워터마크 -->
+    <div class="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none text-amber-300">
+      <svg class="w-[50vw] h-[50vw] max-w-[650px] max-h-[650px] fill-current" viewBox="0 0 24 24"><path d="M11 2h2v6h5v2h-5v12h-2V10H6V8h5V2z"/></svg>
+    </div>
+
+    <!-- [상단 헤더] 타이틀과 하단 3개 박스 간격을 50% 더 넓게 확보 (mb-8 추가) -->
+    <div class="relative z-10 text-center pb-4 pt-1 border-b-2 border-amber-500/20 mb-8 sm:mb-10">
+      <div class="flex items-center justify-center space-x-3 text-amber-400 text-base sm:text-xl tracking-widest font-serif uppercase mb-2">
+        <span>†</span>
+        <span id="dispChurch">고산교회</span>
+        <span>†</span>
+      </div>
+
+      <!-- 타이틀 및 직분 박스 크기 극대화 -->
+      <div class="mt-2 flex items-center justify-center gap-6 flex-wrap">
+        <h1 id="dispMainTitle" class="font-serif text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-200 to-amber-300 py-3 leading-normal">
+          항존직 피택선거
+        </h1>
+        <span id="dispOfficeBadge" class="bg-amber-500/20 border-2 border-amber-500/60 text-amber-300 px-8 py-3.5 rounded-3xl font-serif text-4xl sm:text-6xl font-black shadow-lg">
+          장로
+        </span>
+      </div>
+
+      <!-- 하단 3개 지표 박스 (2배 크기 및 여백) -->
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-5 text-base sm:text-xl text-slate-200">
+        <span id="dispThresholdWrap" class="px-6 py-2.5 rounded-2xl bg-amber-950/50 border-2 border-amber-600/40 text-amber-200 flex items-center gap-3">
+          <i data-lucide="target" class="w-6 h-6 text-amber-400"></i>
+          <span>피택 기준: <strong id="dispThresholdVal" class="font-mono text-amber-300 text-2xl sm:text-3xl font-black">-</strong>표 이상</span>
+        </span>
+        <span id="dispTotalWrap" class="px-6 py-2.5 rounded-2xl bg-slate-900/80 border-2 border-slate-700 text-slate-200 flex items-center gap-3">
+          <i data-lucide="vote" class="w-6 h-6 text-sky-400"></i>
+          <span>총 투표수: <strong id="dispTotalVal" class="font-mono text-white text-2xl sm:text-3xl font-black">-</strong>표</span>
+        </span>
+        <span class="px-6 py-2.5 rounded-2xl bg-slate-900/80 border-2 border-slate-700 text-slate-200 flex items-center gap-3">
+          <i data-lucide="user-check" class="w-6 h-6 text-emerald-400"></i>
+          <span>피택 확정: <strong id="dispConfirmedCount" class="font-mono text-amber-300 text-2xl sm:text-3xl font-black">0</strong>명</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- [중앙 본문] 3다단 그리드 및 박스 세로 높이 대폭 확장 (py-6) -->
+    <div class="relative z-10 flex-grow my-auto flex flex-col justify-center py-6">
+      <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 w-full">
+        <!-- JS 동적 주입 -->
+      </div>
+
+      <div id="noCandidatesNotice" class="text-center py-16 hidden">
+        <p class="font-serif text-slate-300 text-2xl font-bold">등록된 후보자가 없습니다.</p>
+        <p class="text-base text-slate-400 mt-2">관리자 입력 화면에서 후보를 등록해 주세요.</p>
+      </div>
+    </div>
+
+    <!-- [하단 푸터] -->
+    <div class="relative z-10 pt-4 border-t-2 border-amber-500/20 flex items-center justify-between text-slate-400 text-base">
+      <p class="font-serif text-sm sm:text-base text-amber-200/60 italic truncate">
+        "사람을 세우시는 여호와 하나님의 은혜가 고산교회 위에 충만하기를 기도합니다."
+      </p>
+      <div class="flex items-center space-x-2">
+        <button onclick="toggleFullScreen()" class="px-4 py-2 bg-slate-900/80 border-2 border-slate-700 rounded-xl text-sm sm:text-base text-slate-200 flex items-center gap-2 font-bold hover:text-amber-300">
+          <i data-lucide="maximize" class="w-5 h-5"></i>
+          <span>전체화면(F11)</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'GOSAN_CHURCH_ELECTION_DATA_V5';
+    const SYNC_CHANNEL = 'gosan_election_channel_v5';
+
+    let bc = null;
+    try {
+      bc = new BroadcastChannel(SYNC_CHANNEL);
+      bc.onmessage = (event) => {
+        if (event.data && event.data.type === 'SYNC') renderDisplayBoard(event.data.payload);
+      };
+    } catch(e) {}
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try { renderDisplayBoard(JSON.parse(e.newValue)); } catch(err) {}
+      }
+    });
+
+    function getInitialState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+      } catch(e) {}
+      return {
+        churchName: '고산교회',
+        electionTitle: '항존직 피택선거',
+        officeTitle: '장로',
+        thresholdVotes: '',
+        totalBallots: '',
+        autoConfirm: true,
+        candidates: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, name: '', votes: '', manualConfirmed: null }))
+      };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDisplayBoard(getInitialState());
+      lucide.createIcons();
+    });
+
+    function isCandidateConfirmed(cand, appState) {
+      if (!cand.name || !cand.name.trim()) return false;
+      if (cand.manualConfirmed !== null) return cand.manualConfirmed;
+      const numVotes = parseInt(cand.votes, 10) || 0;
+      const threshold = parseInt(appState.thresholdVotes, 10);
+      if (appState.autoConfirm && !isNaN(threshold) && threshold > 0) {
+        return numVotes >= threshold;
+      }
+      return false;
+    }
+
+    function renderDisplayBoard(appState) {
+      document.getElementById('dispChurch').textContent = appState.churchName || '고산교회';
+      document.getElementById('dispMainTitle').textContent = appState.electionTitle || '항존직 피택선거';
+      
+      const officeBadge = document.getElementById('dispOfficeBadge');
+      if (appState.officeTitle) {
+        officeBadge.textContent = appState.officeTitle;
+        officeBadge.classList.remove('hidden');
+      } else {
+        officeBadge.classList.add('hidden');
+      }
+
+      const threshVal = parseInt(appState.thresholdVotes, 10);
+      const threshWrap = document.getElementById('dispThresholdWrap');
+      if (!isNaN(threshVal) && threshVal > 0) {
+        document.getElementById('dispThresholdVal').textContent = threshVal;
+        threshWrap.classList.remove('hidden');
+      } else {
+        threshWrap.classList.add('hidden');
+      }
+
+      const totalVal = parseInt(appState.totalBallots, 10);
+      const totalWrap = document.getElementById('dispTotalWrap');
+      if (!isNaN(totalVal) && totalVal > 0) {
+        document.getElementById('dispTotalVal').textContent = totalVal;
+        totalWrap.classList.remove('hidden');
+      } else {
+        totalWrap.classList.add('hidden');
+      }
+
+      const validList = appState.candidates
+        .filter(c => c.name && c.name.trim().length > 0)
+        .map(c => ({
+          ...c,
+          numVotes: parseInt(c.votes, 10) || 0,
+          confirmed: isCandidateConfirmed(c, appState)
+        }));
+
+      validList.sort((a, b) => {
+        if (b.numVotes !== a.numVotes) return b.numVotes - a.numVotes;
+        return a.id - b.id;
+      });
+
+      const confirmedCount = validList.filter(c => c.confirmed).length;
+      document.getElementById('dispConfirmedCount').textContent = confirmedCount;
+
+      const grid = document.getElementById('cardsGrid');
+      const emptyBox = document.getElementById('noCandidatesNotice');
+      grid.innerHTML = '';
+
+      if (validList.length === 0) {
+        emptyBox.classList.remove('hidden');
+        return;
+      } else {
+        emptyBox.classList.add('hidden');
+      }
+
+      if (validList.length === 1) {
+        grid.className = 'max-w-xl mx-auto w-full';
+      } else if (validList.length === 2) {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto w-full';
+      } else {
+        grid.className = 'grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 w-full';
+      }
+
+      const maxVotes = Math.max(...validList.map(c => c.numVotes), 1);
+      const baseForGauge = (!isNaN(totalVal) && totalVal > 0) ? totalVal : maxVotes;
+
+      let currentRank = 1;
+      validList.forEach((cand, idx) => {
+        if (idx > 0 && cand.numVotes < validList[idx - 1].numVotes) {
+          currentRank = idx + 1;
+        }
+
+        const pct = Math.min(100, Math.round((cand.numVotes / baseForGauge) * 100));
+        const card = createDisplayCard(cand, currentRank, pct, appState);
+        grid.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function createDisplayCard(cand, rank, pct, appState) {
+      const el = document.createElement('div');
+      const isConf = cand.confirmed;
+
+      let rankColor = 'bg-slate-900 text-slate-200 border-slate-700';
+      if (rank === 1) rankColor = 'bg-amber-500/30 text-amber-300 border-amber-500/80 font-black';
+      else if (rank === 2) rankColor = 'bg-slate-600/30 text-slate-100 border-slate-400 font-bold';
+      else if (rank === 3) rankColor = 'bg-amber-900/40 text-amber-400 border-amber-600/60';
+
+      el.className = `relative rounded-3xl p-6 sm:p-7 transition-all duration-300 ${
+        isConf 
+          ? 'bg-gradient-to-r from-amber-950/60 via-slate-900/95 to-amber-950/40 border-4 border-amber-500 shadow-2xl' 
+          : 'bg-slate-900/90 border-2 border-slate-700 shadow-xl'
+      }`;
+
+      // 후보자 이름, 표수, 기호번호, 득표율 2배 확대 및 상하 박스 여백(padding) 크게 확장
+      el.innerHTML = `
+        ${isConf ? `
+          <div class="absolute -top-5 right-6 z-20">
+            <div class="pulse-gold bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-base sm:text-lg font-black px-6 py-2 rounded-full uppercase tracking-wider flex items-center space-x-2 border-2 border-amber-100 shadow-2xl">
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>피택 확정</span>
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div class="w-14 h-14 rounded-2xl border-2 flex items-center justify-center font-serif text-2xl font-black flex-shrink-0 ${rankColor}">
+              ${rank}위
+            </div>
+            <div>
+              <div class="flex items-baseline space-x-3">
+                <span class="font-serif text-5xl sm:text-6xl font-black text-white tracking-tight">${escapeHtml(cand.name)}</span>
+              </div>
+              <span class="text-sm sm:text-base text-slate-300 font-mono font-bold">기호 ${cand.id}번</span>
+            </div>
+          </div>
+
+          <div class="text-right flex items-baseline space-x-2 pr-2">
+            <span class="font-mono text-6xl sm:text-7xl font-black ${isConf ? 'text-amber-300' : 'text-slate-100'}">
+              ${cand.numVotes}
+            </span>
+            <span class="text-lg sm:text-xl font-serif text-slate-300 font-bold">표</span>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <div class="w-full bg-slate-950 rounded-full h-4 overflow-hidden border-2 border-slate-700">
+            <div 
+              class="h-full rounded-full transition-all duration-500 ${isConf ? 'bg-gradient-to-r from-amber-500 to-yellow-300' : 'bg-slate-500'}" 
+              style="width: ${pct}%">
+            </div>
+          </div>
+          <div class="flex justify-between items-center text-sm sm:text-base text-slate-200 mt-3 px-1 font-mono font-bold">
+            <span>득표율: <strong class="text-amber-300 text-lg sm:text-xl">${pct}%</strong></span>
+            ${appState.thresholdVotes ? `
+              <span>
+                ${cand.numVotes >= parseInt(appState.thresholdVotes, 10) 
+                  ? '<span class="text-amber-400 font-black text-lg sm:text-xl">기준 달성</span>' 
+                  : `기준까지 ${parseInt(appState.thresholdVotes, 10) - cand.numVotes}표`}
+              </span>
+            ` : ''}
+          </div>
+        </div>
+      `;
+      return el;
+    }
+
+    function toggleFullScreen() {
+      const target = document.getElementById('displayScreen') || document.documentElement;
+      if (!document.fullscreenElement) {
+        target.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
